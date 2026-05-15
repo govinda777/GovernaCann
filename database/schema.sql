@@ -10,10 +10,8 @@ CREATE TABLE associations (
 );
 
 CREATE TABLE patients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    privy_id VARCHAR(255) PRIMARY KEY,
     association_id UUID REFERENCES associations(id),
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
     wallet_address TEXT,
     status TEXT DEFAULT 'pending', -- pending, active, suspended
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -21,7 +19,7 @@ CREATE TABLE patients (
 
 CREATE TABLE prescriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id),
+    patient_id VARCHAR(255) REFERENCES patients(privy_id),
     doctor_name TEXT NOT NULL,
     doctor_crm TEXT NOT NULL,
     issue_date DATE NOT NULL,
