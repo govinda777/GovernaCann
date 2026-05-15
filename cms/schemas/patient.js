@@ -10,9 +10,10 @@ export default {
       validation: Rule => Rule.required()
     },
     {
-      name: 'associationId',
-      title: 'Association ID',
-      type: 'string',
+      name: 'association',
+      title: 'Association',
+      type: 'reference',
+      to: [{type: 'association'}],
       description: 'Used for row-level access control',
       validation: Rule => Rule.required()
     },

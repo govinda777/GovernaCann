@@ -4,22 +4,25 @@ export default {
   type: 'document',
   fields: [
     {
-      name: 'patientId',
-      title: 'Patient ID',
-      type: 'string',
+      name: 'patient',
+      title: 'Patient',
+      type: 'reference',
+      to: [{type: 'patient'}],
       validation: Rule => Rule.required()
     },
     {
-      name: 'associationId',
-      title: 'Association ID',
-      type: 'string',
+      name: 'association',
+      title: 'Association',
+      type: 'reference',
+      to: [{type: 'association'}],
       description: 'Used for row-level access control to ensure physicians only see prescriptions from their association',
       validation: Rule => Rule.required()
     },
     {
       name: 'physicianId',
-      title: 'Physician ID',
+      title: 'Physician ID (Privy)',
       type: 'string',
+      description: 'Identity managed by Privy, so we store the string ID instead of a Sanity reference',
       validation: Rule => Rule.required()
     },
     {

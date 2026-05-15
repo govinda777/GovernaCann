@@ -63,7 +63,7 @@ app.get('/api/patients', requireAuth, requireRole('physician'), async (req, res)
   console.log(`Fetching patients for association: ${associationId}`);
 
   try {
-    const query = `*[_type == "patient" && associationId == $associationId]`;
+    const query = `*[_type == "patient" && association._ref == $associationId]`;
     const patients = await sanityClient.fetch(query, { associationId });
     res.json({ success: true, data: patients });
   } catch (error) {
@@ -80,18 +80,26 @@ app.post('/api/prescriptions', requireAuth, requireRole('physician'), async (req
 
   console.log(`Physician ${physicianId} issuing prescription for ${patientId} in association ${associationId}`);
 
-  // Save the prescription securely to Sanity using the context from the token
-  const prescriptionDoc = {
-    _type: 'prescription',
-    patientId,
-    associationId,
-    physicianId,
-    medication,
-    dosage,
-    issueDate: new Date().toISOString()
-  };
-
   try {
+    // SECURITY: Prevent IDOR. Verify the patient belongs to this physician's association context
+    const patientCheckQuery = `*[_type == "patient" && _id == $patientId && association._ref == $associationId][0]`;
+    const patient = await sanityClient.fetch(patientCheckQuery, { patientId, associationId });
+
+    if (!patient) {
+      return res.status(403).json({ success: false, error: 'Forbidden: Patient not found or does not belong to your association' });
+    }
+
+    // Save the prescription securely to Sanity using the context from the token
+    const prescriptionDoc = {
+      _type: 'prescription',
+      patient: { _type: 'reference', _ref: patientId },
+      association: { _type: 'reference', _ref: associationId },
+      physicianId,
+      medication,
+      dosage,
+      issueDate: new Date().toISOString()
+    };
+
     const result = await sanityClient.create(prescriptionDoc);
     res.json({ success: true, data: result });
   } catch (error) {

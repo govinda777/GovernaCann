@@ -14,17 +14,17 @@ const PhysicianPortal = () => {
   const [message, setMessage] = useState('');
 
   // A real token fetched securely via Privy context
-  // This is a placeholder mock JWT generated specifically for this mock environment.
-  // It decodes to { id: 'doc123', role: 'physician', associationId: 'assoc789' } using secret 'mock_secret'
-  const MOCK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRvYzEyMyIsInJvbGUiOiJwaHlzaWNpYW4iLCJhc3NvY2lhdGlvbklkIjoiYXNzb2M3ODkiLCJpYXQiOjE3Nzg4NzQ4NDZ9.7_Bop1OGr0pX4Z2xWaQ9VkkD_NOjwe-pPinVdEkrhkM';
+  // In development, this relies on a .env variable to prevent exposing raw tokens in the codebase.
+  const auth_token = process.env.NEXT_PUBLIC_AUTH_TOKEN || '';
 
   useEffect(() => {
     // Fetch patients belonging strictly to this physician's association context
     const fetchPatients = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/patients', {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+        const response = await fetch(`${apiUrl}/patients`, {
           headers: {
-            'Authorization': `Bearer ${MOCK_TOKEN}`
+            'Authorization': `Bearer ${auth_token}`
           }
         });
         const result = await response.json();
@@ -41,11 +41,12 @@ const PhysicianPortal = () => {
   const handleIssuePrescription = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/prescriptions', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${apiUrl}/prescriptions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOCK_TOKEN}`
+          'Authorization': `Bearer ${auth_token}`
         },
         body: JSON.stringify({
           patientId: selectedPatient,
