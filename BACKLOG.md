@@ -8,7 +8,8 @@
 - [x] Estruturação base do monorepo (Frontend Next.js, Backend Node.js, Agentes Python).
 - [x] Configuração inicial do banco de dados (Neon SQL) com esquema multi-tenant (`associationId`).
 - [ ] **Gestão de Tenant e Isolamento:** Implementar validação estrita no backend para garantir que todas as queries e mutações (Sanity e Neon) filtrem corretamente por `associationId`.
-- [ ] **Integração Backend/CrewAI:** Refinar o `agent-bridge.js` para garantir chamadas não bloqueantes aos scripts Python, incluindo logs estruturados e timeout.
+- [x] **Integração Backend/CrewAI:** Refinar o `agent-bridge.js` para garantir chamadas não bloqueantes aos scripts Python, incluindo logs estruturados e timeout.
+  - *Detalhe da Atualização:* Adicionado log estruturado em formato JSON (`timestamp`, `level`, `message`, `duration`) e implementado um timeout configurável (padrão 30s) para garantir que processos Python inativos ou bloqueados sejam encerrados com segurança (`SIGTERM`), rejeitando a Promise apropriadamente. Testes unitários e E2E adicionados e verificados.
 - [ ] **Pipeline de Deploy:** Consolidar e testar o deploy estático do frontend via GitHub Actions para o GitHub Pages.
 
 ## 🔒 2. Identidade, Wallets & Rastreabilidade
