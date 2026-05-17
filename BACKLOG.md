@@ -1,47 +1,38 @@
 # 📋 BACKLOG - GovernaCann (Dona Liamba OS) MVP
 
-**Objetivo do MVP:** Validar o fluxo de ponta a ponta da plataforma de gestão de associações, garantindo integração com IoT em tempo real, rastreabilidade transparente via Smart Wallets (Privy), pagamentos via PIX, controle estrito de cotas para pacientes e orquestração dos agentes CrewAI.
+**Objetivo do MVP / Próxima Release:** Validar o fluxo de ponta a ponta da plataforma de gestão de associações medicinais canábicas. O sistema deve garantir a orquestração segura dos agentes CrewAI, integração com IoT em tempo real (MQTT), rastreabilidade imutável via Smart Wallets L2, pagamentos via PIX e controle estrito de cotas para pacientes com tratamento de erros robusto.
 
 ---
 
-## 🏗️ 1. Infraestrutura & Core Engine
-- [x] Estruturação base do monorepo (Frontend Next.js, Backend Node.js, Agentes Python).
-- [x] Configuração inicial do banco de dados (Neon SQL) com esquema multi-tenant (`associationId`).
-- [ ] **Gestão de Tenant e Isolamento:** Implementar validação estrita no backend para garantir que todas as queries e mutações (Sanity e Neon) filtrem corretamente por `associationId`.
-- [ ] **Integração Backend/CrewAI:** Refinar o `agent-bridge.js` para garantir chamadas não bloqueantes aos scripts Python, incluindo logs estruturados e timeout.
-- [ ] **Pipeline de Deploy:** Consolidar e testar o deploy estático do frontend via GitHub Actions para o GitHub Pages.
+## 🏗️ Infra & Core Engine
+- [x] **Setup do Monorepo:** Estruturação base (Frontend Next.js, Backend Node.js, Agentes Python).
+- [x] **Database Setup:** Configuração inicial do banco de dados (Neon SQL) com esquema multi-tenant (`associationId`).
+- [ ] **Gestão de Tenant e Isolamento:** Implementar validação estrita no backend Node.js (via middleware JWT) para garantir que todas as queries e mutações (Sanity CMS e Neon SQL) filtrem obrigatoriamente pelo contexto do `associationId`. *Critério de Aceite: Nenhuma query deve retornar dados de outra associação.*
+- [ ] **Integração Backend/CrewAI:** Refinar o `backend/utils/agent-bridge.js` usando `child_process` para garantir chamadas assíncronas aos scripts Python, incluindo logs estruturados, tratamento de timeout e error boundaries.
+- [ ] **Pipeline de Deploy:** Consolidar e testar o workflow do GitHub Actions em `.github/workflows/deploy-frontend.yml` configurado para `static export` do Next.js no GitHub Pages.
+- [ ] **Otimização de Custos e Modelagem Sanity:** Implementar queries no Sanity usando um dataset único filtrado via query por `associationId` no backend para otimizar os custos com o CMS mantendo a segurança multi-tenant.
 
-## 🔒 2. Identidade, Wallets & Rastreabilidade
-- [ ] **Autenticação com Privy:** Finalizar fluxo de login gerando e vinculando o `privy_id` aos registros locais (Neon SQL).
-- [ ] **Smart Wallets para Colaboradores:** Automatizar a criação de wallets no momento do login para prestadores de serviço e colaboradores.
-- [ ] **Rastreabilidade de Ações (Audit Trail):** Gravar movimentações críticas (ex: atualizações de estoque, dispensação) on-chain ou em banco imutável usando a wallet do colaborador logado.
-- [ ] **Tokenização Leve de Ativos (Inovação):** Definir e prototipar a estratégia de baixo custo (ex: L2 ou off-chain state channels) para rastrear os produtos medicinais do cultivo à entrega de forma acessível.
+## 🖥️ Frontend & UX
+- [ ] **Dashboard do Colaborador:** Desenvolver as views no Next.js para consultar a rastreabilidade dos produtos on-chain e os status em tempo real do cultivo (via métricas IoT agregadas).
+- [ ] **Portal do Paciente:** Implementar a visualização do consumo da cota medicinal, histórico de pedidos via PIX e fluxo facilitado (Tirinhas de UX) na renovação de receitas.
+- [ ] **Tratamento Global de Erros UI:** Criar interceptadores de erro globais e modais amigáveis no Next.js caso o backend, integrações PIX ou a camada de IA falhem.
 
-## 💰 3. Financeiro, Acolhimento & Pagamentos
-- [ ] **Integração de Pagamento via PIX:** Implementar gateway/API para geração e conciliação automática de cobranças via PIX.
-- [ ] **Controle de Cota de Pacientes:** Criar a lógica de negócio estrita no backend para bloquear a compra/dispensação caso o paciente exceda a sua cota prescrita (limite do laudo médico).
-- [ ] **Gestão de Assinaturas/Mensalidades:** Sistema para verificar status de pagamento da associação do paciente antes de autorizar novos pedidos.
+## 🔒 Segurança & Resiliência
+- [ ] **Autenticação e Smart Wallets (Privy):** Finalizar o fluxo completo com o Privy, gerando e vinculando o `privy_id` (PK) aos registros locais do Neon SQL no momento de login.
+- [ ] **Rastreabilidade L2 (Audit Trail):** Automatizar a geração de wallets L2 para os colaboradores e desenvolver a função de gravar eventos críticos operacionais (ex: dispensação, auditoria, estoque) on-chain.
+- [ ] **Controle Restrito de Cota:** Desenvolver a lógica no backend para travar a compra/dispensação estritamente nos limites definidos pelo laudo médico. *Critério de Aceite: Se a cota ultrapassar 1g a mais do que o prescrito, a transação no banco não deve efetivar.*
+- [ ] **Segurança de PII (LGPD):** Garantir que apenas o `privy_id` circule entre os serviços (Neon e CrewAI), limitando e controlando estritamente os dados do paciente expostos às LLMs.
 
-## 🌿 4. Cultivo, IoT & Telemetria
-- [ ] **Ingestão de Dados IoT em Tempo Real:** Configurar o broker MQTT para recebimento contínuo de telemetria do cultivo (temperatura, umidade, luz).
-- [ ] **Armazenamento e Descarte Seguro:** Implementar estratégia de banco de séries temporais (ou tabela otimizada no Neon) agregando dados antigos e descartando ruídos para economizar espaço, mantendo a performance analítica.
-- [ ] **Automação Baseada em Regras:** Lógica para envio de comandos reversos via MQTT caso os parâmetros saiam do limite ideal do cultivo.
-
-## 🤖 5. Agentes de IA (CrewAI)
-- [ ] **Fallback e Tratamento de Erros:** Ajustar `main.py` para lidar com falhas da API da OpenAI, acionando o mock mode silenciosamente caso necessário.
-- [ ] **Agente Grow/IoT:** Implementar a análise da telemetria armazenada e geração de insights em linguagem natural para o cultivador.
-- [ ] **Agente Legal/Regulatory:** Parametrizar a verificação de conformidade do limite de cota dos pacientes com base na LGPD e regras vigentes.
-
-## 🖥️ 6. Frontend & Experiência do Usuário (UX)
-- [ ] **Dashboard do Colaborador:** View para consultar a rastreabilidade dos produtos e status em tempo real do cultivo.
-- [ ] **Portal do Paciente:** Visualização clara do consumo da cota, histórico de pedidos via PIX e facilitação na renovação de receitas.
-- [ ] **Tratamento Global de Erros UI:** Interceptadores de erro robustos para exibir alertas (toasts/modais) amigáveis caso o backend, o PIX ou a IA falhem.
+## 📈 Monitoramento & Analytics
+- [ ] **Ingestão e Descarte de IoT (MQTT):** Configurar o broker MQTT para telemetria em tempo real. Implementar estratégia (ex: cron jobs no Node.js ou features nativas do Postgres) para agregação e expurgo automático de dados brutos antigos visando reduzir custos de storage.
+- [ ] **Automação de Cultivo:** Desenvolver rotinas para enviar comandos automáticos de reversão pelo MQTT (ex: ligar o exaustor se a temperatura ou umidade ultrapassar o threshold da strain).
+- [ ] **Agentes CrewAI de Monitoramento:** Desenvolver prompt enginering e tools para o agente **Grow/IoT** sumarizar o cultivo diário; e o agente **Regulatory** monitorar a conformidade das dispensações baseadas nas regras.
 
 ---
 
-## 🚨 7. Pontos Cegos & Edge Cases (Resiliência)
-- [ ] **Resiliência do PIX:** Como lidar com falhas de webhook do provedor de PIX? Implementar um fallback de polling (`cron job`) para reconciliar pagamentos pendentes de forma assíncrona.
-- [ ] **Segurança e Vazamento de Dados (PII):** Validar estritamente que os logs do sistema e os inputs da IA **nunca** expõem PII (Informações de Identificação Pessoal) de pacientes. Usar apenas o `privy_id`.
-- [ ] **Limites de Cota Concorrentes (Race Conditions):** Adicionar *locks* de transação no banco de dados para evitar "double-spending" da cota do paciente em requisições simultâneas.
-- [ ] **Desconexão de Sensores IoT:** Implementar alertas automáticos (via Agente de Cultivo) caso os sensores parem de enviar telemetria por mais de 'X' minutos, garantindo ação rápida para não perder a safra.
-- [ ] **Timeouts dos Agentes de IA:** Como a IA pode demorar mais que o tempo de timeout padrão de uma requisição HTTP, adotar um padrão de processamento em background, retornando um Job ID para o frontend consultar o status do agente posteriormente.
+## 🚨 Pontos Cegos & Edge Cases
+- [ ] **Resiliência de Webhooks (PIX):** Implementar um fallback (`cron job` via Node) para fazer a conciliação assíncrona (polling de status) caso o webhook do provedor PIX falhe ou atrase.
+- [ ] **Race Conditions em Cota de Pacientes:** Adicionar locks transacionais estritos no Neon SQL para evitar o "double-spending" na compra simultânea do mesmo paciente, estourando sua cota permitida.
+- [ ] **Fallback do CrewAI:** Garantir que o `agents/main.py` possua tratamento de erro robusto. Se a API da OpenAI falhar ou demorar demais, o sistema deve acionar o fallback mock nativo silenciosamente, retornando status processável sem derrubar o backend.
+- [ ] **Desconexão de Sensores IoT:** O sistema deve disparar um alerta crítico imediato caso os sensores das estufas parem de enviar payloads pelo MQTT por mais de 'X' minutos, evitando prejuízos irremediáveis na safra.
+- [ ] **Timeouts do Gateway AI:** Considerando respostas longas da IA, implementar no Node.js um pattern de *Async Job com Polling* (ex: retorna HTTP 202 com Job ID e o Next.js faz o pooling do resultado para a UX) ao invés de manter conexões HTTP abertas que podem gerar timeouts excessivos no Vercel/Infra.
