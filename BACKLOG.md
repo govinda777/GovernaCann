@@ -46,3 +46,45 @@
 - [ ] **Limites de Cota Concorrentes (Race Conditions):** Adicionar *locks* de transação no banco de dados para evitar "double-spending" da cota do paciente em requisições simultâneas.
 - [ ] **Desconexão de Sensores IoT:** Implementar alertas automáticos (via Agente de Cultivo) caso os sensores parem de enviar telemetria por mais de 'X' minutos, garantindo ação rápida para não perder a safra.
 - [ ] **Timeouts dos Agentes de IA:** Como a IA pode demorar mais que o tempo de timeout padrão de uma requisição HTTP, adotar um padrão de processamento em background, retornando um Job ID para o frontend consultar o status do agente posteriormente.
+
+---
+
+## 🗺️ 8. Mapeamento de Jornadas (User Stories) e Testes BDD
+
+Nesta seção, mapeamos as principais jornadas de usuário do sistema GovernaCann, especificando a implementação técnica (stack) e as histórias de usuário. Para garantir a qualidade e a aderência aos requisitos (como controle de cota e isolamento), utilizaremos testes BDD para cada jornada.
+
+### 🏛️ Jornada 1: Nova Associação (Onboarding e Legal)
+**Stack:** Next.js (UI de onboarding modular via Sanity/JSON), Node.js (criação de registros no Neon SQL e geração do `associationId`), CrewAI (Agente Legal para validação de estatuto), Privy (Wallet base da associação).
+
+- [ ] **US 1.1 - Criação de Associação:** Como fundador, quero me registrar via Privy e preencher os dados da associação para que o sistema crie um tenant isolado (`associationId`) e minha smart wallet no Base L2.
+- [ ] **US 1.2 - Validação de Estatuto:** Como fundador, quero enviar um rascunho do meu estatuto para que o Agente Legal (CrewAI) valide sua conformidade e devolva as correções necessárias.
+- [ ] **Teste BDD 1.1:** `Cenário: Registro de nova associação com sucesso`.
+- [ ] **Teste BDD 1.2:** `Cenário: Validação de estatuto pelo agente CrewAI`.
+
+### 🌱 Jornada 2: Grow (Cultivo Inteligente e IoT)
+**Stack:** Node.js (MQTT Broker/Client para telemetria), Neon SQL (Timeseries data), CrewAI (Agente Grow para análise), Next.js (Dashboard do cultivador).
+
+- [ ] **US 2.1 - Ingestão de Telemetria:** Como cultivador, quero que os sensores IoT (temperatura, umidade) publiquem dados via MQTT e que o backend armazene esses dados em tempo real no Neon SQL atrelados ao meu lote e `associationId`.
+- [ ] **US 2.2 - Análise de Safra:** Como cultivador, quero visualizar no dashboard alertas gerados pelo Agente Grow (CrewAI) quando as métricas IoT saírem do padrão, para corrigir o ambiente preventivamente.
+- [ ] **Teste BDD 2.1:** `Cenário: Ingestão de métricas MQTT em tempo real`.
+- [ ] **Teste BDD 2.2:** `Cenário: Alerta de temperatura fora do padrão gerado por IA`.
+
+### 🫂 Jornada 3: Patient Care (Acolhimento e Dispensação)
+**Stack:** Next.js (Portal do paciente/Tirinhas), Node.js (regras de cota e integração PIX), Neon SQL (histórico de dispensação, sem PII).
+
+- [ ] **US 3.1 - Verificação de Cota (Prescrição):** Como paciente, quero ver meu limite mensal de medicamentos no portal para saber o quanto ainda posso solicitar.
+- [ ] **US 3.2 - Bloqueio de Dispensação:** Como farmacêutico/dispensador, quero que o sistema bloqueie a entrega de um produto se o paciente já atingiu sua cota mensal (conforme laudo e `privy_id`).
+- [ ] **Teste BDD 3.1:** `Cenário: Paciente visualiza sua cota restante`.
+- [ ] **Teste BDD 3.2:** `Cenário: Bloqueio de dispensação ao exceder cota do laudo`.
+
+### 📊 Jornada 4: Auditoria (Pagamentos e Compliance)
+**Stack:** Node.js (integração webhook PIX, auditoria imutável via wallet), CrewAI (Agente Audit).
+
+- [ ] **US 4.1 - Pagamento de Mensalidade:** Como paciente, quero gerar uma cobrança PIX no portal e, após o pagamento, ver minha mensalidade atualizada via webhook sem intervenção humana.
+- [ ] **US 4.2 - Conciliação Automática:** Como tesoureiro, quero que o Agente Audit valide transações PIX com as dispensações mensais e me alerte sobre anomalias no fluxo de caixa.
+- [ ] **Teste BDD 4.1:** `Cenário: Atualização de mensalidade via webhook PIX`.
+- [ ] **Teste BDD 4.2:** `Cenário: Relatório de discrepância gerado pelo agente Audit`.
+
+### 🧪 Configuração de Pipeline BDD
+- [ ] **Configuração Jest/Cucumber:** Integrar suporte a BDD (ex: `jest-cucumber`) no backend para rodar as especificações de jornada.
+- [ ] **Relatório de Execução (Skipped):** Configurar a pipeline do GitHub Actions para mapear, executar e reportar esses testes BDD. *Inicialmente, os testes devem ser configurados como "skipped" (ignorados) para demonstrar o mapeamento das jornadas no report do CI antes da implementação real.*
